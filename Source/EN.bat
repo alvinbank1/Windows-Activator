@@ -24,8 +24,8 @@ REM --> If error flag set, we do not have admin.
      CD /D "%~dp0"
  :--------------------------------------
 color 1f
-title Windows Activator Version 0.1
-echo WINDOWS ACTIVATOR Version 0.1
+title Windows Activator Version 0.2
+echo WINDOWS ACTIVATOR Version 0.2
 echo.
 echo Enter "y" to continue.
 set /p "enter=>"
@@ -34,7 +34,6 @@ if not "%enter%"==y goto no
 
 :no
 cls
-echo Alright.
 echo Press any key to exit.
 pause>nul
 exit
@@ -49,9 +48,77 @@ echo Do you agree to the Terms of Use?
 echo By entering "y" you agree to our Terms of Use.
 echo Enter "t" to show Terms of Use.
 set /p "termsofuse=>"
-if %termsofuse%== y goto select
+if %termsofuse%== y goto mode
 if %termsofuse%== t goto termsofuse
-if not "%termsofuse%"==y goto no
+
+:mode
+color 1f
+cls
+echo Select Mode
+echo.
+echo 1. Install Key
+echo 2. Revoke Key
+echo 3. Activation Information
+echo.
+echo If you want to activate windows, input "1".
+echo If you want to deactivate windows, input "2".
+echo If you want to show information, input "3".
+echo.
+set /p "mode=>"
+if %mode%== 1 goto select
+if %mode%== 2 goto deactivate
+if %mode%== 3 goto info
+goto mode
+
+:info
+cls
+echo Loading Information...
+For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /xpr')Do Set "info2=%%A"
+cls
+cscript //nologo "%windir%\system32\slmgr.vbs" /dlv
+echo.
+echo %info2%
+echo.
+echo Press any key to continue.
+pause>nul
+goto mode
+
+:deactivate
+cls
+echo Do you want to revoke Windows?
+echo.
+echo Input y to continue.
+echo Input n to cancel.
+echo.
+set /p "revoke=>"
+if %revoke%== y goto deactivatey
+if not %revoke%== y goto mode
+
+:deactivatey
+For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /cpky')Do Set "output=%%A"
+if not "%errorlevel%" == "0" (
+	goto error
+)
+cls
+echo Revoke Success! (You need to restart your computer to save your information)
+echo.
+echo Input "y" to exit, Input "i" to show information.
+set /p "info=>"
+if %info%== i goto deinfo
+if not %info%== i exit
+
+:deinfo
+cls
+echo Loading Information...
+For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /xpr')Do Set "info2=%%A"
+cls
+cscript //nologo "%windir%\system32\slmgr.vbs" /dlv
+echo.
+echo %info2%
+echo.
+echo Press any key to continue.
+pause>nul
+goto deactivatey
 
 :select
 cls
@@ -70,11 +137,13 @@ echo 10. Enterprise N
 echo 11. Custom Activation
 echo.
 echo We highly Recommend using "5. Pro".
-echo If you want to use your own KMS key, Please use "11. Custom Key".
-echo or enter "0" to exit.
+echo If you want to use your own KMS key, Please use "11. Custom Activation".
+echo or enter "0" to go to menu.
 set /p "edition=>"
-if %edition%== 0 goto no
+if %edition%== 0 goto menu
 if %edition%== 1 goto home
+if %edition%== 5 goto pro
+if %edition%== 7 goto education
 if %edition%== 11 goto custom
 
 :unknown
@@ -126,16 +195,16 @@ echo.
 echo Please try again later.
 echo If you continue to see this message, please report it to Github.
 echo.
-echo Press any key to exit.
+echo Press any key to start again.
 pause>nul
-exit
+goto mode
 
 :done
 cls
 echo Thank you for using Windows Activator.
-echo Press any key to exit.
+echo Press any key to go to menu.
 pause>nul
-exit
+goto menu
 
 :check
 cls
@@ -150,25 +219,38 @@ echo Press any key to continue.
 pause>nul
 goto complete
 
-
 :home
+set skey=TX9XD-98N7V-6WMQ6-BX7FG-H8Q99
+set sedition=Windows Home Edition
+goto activate
+
+:pro
+set skey=W269N-WFGWX-YVC9B-4J6C9-T83GX
+set sedition=Windows Pro Edition
+goto activate
+
+:education
+set skey=NW6C2-QMPVW-D7KKK-3GKT6-VCFB2
+set sedition=Windows Education Edition
+goto activate
+
+:activate
 cls
-echo Windows Home Edition
+echo %sedition%
 echo ------------Logs------------
 echo Activate Started
-echo Using key "TX9XD-98N7V-6WMQ6-BX7FG-H8Q99"...
+echo Using key "%skey%"...
 echo -----------------------------
-For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /ipk TX9XD-98N7V-6WMQ6-BX7FG-H8Q99')Do Set "output=%%A"
-cscript //nologo "%windir%\system32\slmgr.vbs" /ipk TX9XD-98N7V-6WMQ6-BX7FG-H8Q99
-goto error
+For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /ipk %skey%')Do Set "output=%%A"
+cscript //nologo "%windir%\system32\slmgr.vbs" /ipk %skey%
 if not "%errorlevel%" == "0" (
 	goto error
 )
 cls
-echo Windows Home Edition
+echo %sedition%
 echo ------------Logs------------
 echo Activate Started
-echo Using key "TX9XD-98N7V-6WMQ6-BX7FG-H8Q99"... (Complete)
+echo Using key "%skey%"... (Complete)
 echo Setting activation server to KMS(kms8.msguides.com)...
 echo -----------------------------
 For /F Delims^=^ EOL^= %%A In ('cscript //nologo "%windir%\system32\slmgr.vbs" /skms kms8.msguides.com')Do Set "output=%%A"
@@ -177,10 +259,10 @@ if not "%errorlevel%" == "0" (
 	goto error
 )
 cls
-echo Windows Home Edition
+echo %sedition%
 echo ------------Logs------------
 echo Activate Started
-echo Using key "TX9XD-98N7V-6WMQ6-BX7FG-H8Q99"... (Complete)
+echo Using key "%skey%"... (Complete)
 echo Setting activation server to KMS(kms8.msguides.com)... (Complete)
 echo Activating Windows...
 echo -----------------------------
@@ -190,9 +272,10 @@ if not "%errorlevel%" == "0" (
 	goto error
 )
 cls
+echo %sedition%
 echo ------------Logs------------
 echo Activate Started
-echo Using key "TX9XD-98N7V-6WMQ6-BX7FG-H8Q99"... (Complete)
+echo Using key "%skey%"... (Complete)
 echo Setting activation server to KMS(kms8.msguides.com)... (Complete)
 echo Activating Windows... (Complete)
 echo Complete!
